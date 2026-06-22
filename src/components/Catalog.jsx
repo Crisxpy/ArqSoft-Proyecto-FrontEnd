@@ -65,10 +65,17 @@ export default function Catalog({ search, cart, onAddToCart, page, onPageChange 
             <div key={p.id} className="product-card">
               <div className="product-img" style={{ background: 'var(--color-background-secondary)' }}>
                 {p.imageUrl ? (
-                  <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  '📦'
-                )}
+                  <img
+                    src={p.imageUrl}
+                    alt={p.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextSibling.style.display = 'block';
+                    }}
+                  />
+                ) : null}
+                <span style={{ display: p.imageUrl ? 'none' : 'block' }}>📦</span>
               </div>
               <p className="product-name">{p.name}</p>
               <p className="product-cat">{p.category}</p>
