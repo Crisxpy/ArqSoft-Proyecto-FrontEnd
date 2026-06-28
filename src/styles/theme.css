@@ -1,0 +1,56 @@
+/* Tema scoped para Tailwind, usado SOLO por ProductPage/ProductDetail.
+   A proposito NO incluye el reset global "@layer base { * {...} body {...} }"
+   que traia el export original de Figma - ese reset afecta toda la app
+   (border-color y bg/text de <body>) y rompiamos el resto del sitio
+   (Navbar, Cart, Orders, etc.) que no fue disenado para convivir con el.
+   Colores alineados al verde de marca real del proyecto (--color-primary
+   en src/index.css = #28C064), no al #2eca7f que traia el export. */
+
+:root {
+  --background: #121212;
+  --foreground: #ffffff;
+  --card: #1e1e1e;
+  --card-foreground: #ffffff;
+  --popover: #1e1e1e;
+  --popover-foreground: #ffffff;
+  --primary: #28c064;
+  --primary-foreground: #0a1a10;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #ffffff;
+  --muted: #252525;
+  --muted-foreground: #a0a0a0;
+  --accent: #28c064;
+  --accent-foreground: #0a1a10;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #2a2a2a;
+  --ring: #28c064;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}

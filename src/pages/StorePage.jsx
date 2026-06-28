@@ -7,43 +7,11 @@ import Cart from '../components/Cart';
 import Orders from '../components/Orders';
 import Footer from '../components/Footer';
 import { useAuth } from '../adapters/hooks/useAuth.jsx';
-import { useCart } from '../adapters/hooks/useCart.js';
-
-// Pedidos de demostracion del mockup (antes se cargaban via seedOrders()
-// al iniciar sesion en App.jsx; con el routing nuevo se inicializan aqui
-// directo, ya que useCart() solo vive dentro de StorePage).
-const DEMO_ORDERS = [
-  {
-    id: 'ORD-A4F2B1',
-    date: '10/06/2026',
-    status: 'delivered',
-    items: [
-      { name: 'Monitor 27"', qty: 1, price: 319990 },
-      { name: 'Mouse inalámbrico', qty: 2, price: 24990 }
-    ],
-    total: 369970
-  },
-  {
-    id: 'ORD-C9D3E8',
-    date: '12/06/2026',
-    status: 'shipped',
-    items: [{ name: 'Notebook Pro 14"', qty: 1, price: 699990 }],
-    total: 699990
-  },
-  {
-    id: 'ORD-F1A0B3',
-    date: '14/06/2026',
-    status: 'processing',
-    items: [
-      { name: 'Silla ergonómica', qty: 1, price: 189990 },
-      { name: 'Lámpara LED', qty: 2, price: 19990 }
-    ],
-    total: 229970
-  }
-];
+import { useCart } from '../adapters/hooks/useCart.jsx';
 
 // Tienda principal (catalogo/carro/pedidos). Requiere sesion iniciada -
-// el guard de ruta vive en App.jsx (RequireAuth).
+// el guard de ruta vive en App.jsx (RequireAuth). El carro/pedidos vienen
+// de CartProvider (Context) para compartir estado con ProductPage.
 export default function StorePage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -63,7 +31,7 @@ export default function StorePage() {
     clearCart,
     placeOrder,
     clearOrders
-  } = useCart(DEMO_ORDERS);
+  } = useCart();
 
   const handleLogout = () => {
     logout();

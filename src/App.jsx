@@ -9,6 +9,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 
 import { AuthProvider, useAuth } from './adapters/hooks/useAuth.jsx';
+import { CartProvider } from './adapters/hooks/useCart.jsx';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -31,25 +32,27 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/tienda"
-            element={
-              <RequireAuth>
-                <StorePage />
-              </RequireAuth>
-            }
-          />
-          <Route path="/productos/:id" element={<ProductPage />} />
+        <CartProvider>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/tienda"
+              element={
+                <RequireAuth>
+                  <StorePage />
+                </RequireAuth>
+              }
+            />
+            <Route path="/productos/:id" element={<ProductPage />} />
 
-          {/* Admin: rutas separadas, sin link visible desde la tienda principal */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            {/* Admin: rutas separadas, sin link visible desde la tienda principal */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );
