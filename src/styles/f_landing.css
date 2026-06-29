@@ -1,0 +1,137 @@
+/* Custom Figma Landing Styles with f_ prefix */
+
+.f_landing_wrapper {
+  background-color: #0B0F0E !important;
+  color: #FFFFFF !important;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+.f_hero_banner {
+  background: linear-gradient(135deg, #0D2418 0%, #0B0F0E 60%) !important;
+  border: 1px solid #2A2F2D !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.f_stat_card {
+  background: rgba(17, 21, 20, 0.8) !important;
+  border: 1px solid #2A2F2D !important;
+  border-radius: 0.75rem;
+  backdrop-filter: blur(4px);
+}
+
+.f_green_btn {
+  background-color: #22C55E !important;
+  color: #0B0F0E !important;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.f_green_btn:hover {
+  background-color: #16A34A !important;
+}
+
+.f_green_btn:active {
+  transform: scale(0.98);
+}
+
+.f_green_text {
+  color: #22C55E !important;
+}
+
+.f_border_dark {
+  border-color: #2A2F2D !important;
+}
+
+.f_card_dark {
+  background-color: #111514 !important;
+  border: 1px solid #2A2F2D !important;
+  border-radius: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.f_card_dark:hover {
+  border-color: #22C55E !important;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.08) !important;
+}
+
+.f_deal_timer {
+  background-color: #0B0F0E !important;
+  color: #22C55E !important;
+  border: 1px solid #2A2F2D !important;
+}
+
+.f_flash_icon_wrap {
+  background-color: #3D1A1A !important;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.f_category_card {
+  background-color: #111514 !important;
+  border: 1px solid #2A2F2D !important;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.f_category_card:hover {
+  border-color: #22C55E !important;
+}
+
+.f_category_icon_wrap {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: transform 0.2s ease;
+}
+
+.f_category_card:hover .f_category_icon_wrap {
+  transform: scale(1.08);
+}
+
+/* Attenuation overlays */
+.f_text_muted {
+  color: #A1A1AA !important;
+}
+
+/* Badge variants */
+.f_badge_primary {
+  background-color: rgba(34, 197, 94, 0.12) !important;
+  color: #22C55E !important;
+}
+
+.f_badge_danger {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  color: #EF4444 !important;
+}
+
+.f_badge_warning {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  color: #F59E0B !important;
+}
+
+/* Navigation items overrides */
+.f_nav_tab_active {
+  color: #22C55E !important;
+  border-bottom: 2px solid #22C55E !important;
+}
+
+.f_nav_tab_inactive {
+  color: #A1A1AA !important;
+}
+
+.f_nav_tab_inactive:hover {
+  color: #FFFFFF !important;
+}

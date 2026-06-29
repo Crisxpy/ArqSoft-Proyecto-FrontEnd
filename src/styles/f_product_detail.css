@@ -1,0 +1,142 @@
+/* Custom Figma Product Detail Styles with f_ prefix */
+
+.f_detail_wrapper {
+  background-color: #121212 !important;
+  color: #FFFFFF !important;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+.f_detail_gallery_main {
+  background-color: #2A2A2A !important;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 4/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.f_detail_gallery_img {
+  width: 100%;
+  height: 100%;
+  object-contain: p-6;
+  transition: opacity 0.3s ease;
+}
+
+.f_detail_thumbnail {
+  background-color: #2A2A2A !important;
+  border: 2px solid transparent !important;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.f_detail_thumbnail.f_active {
+  border-color: #28C064 !important;
+}
+
+.f_detail_thumbnail:hover:not(.f_active) {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.f_detail_star {
+  fill: #28C064 !important;
+  color: #28C064 !important;
+}
+
+.f_detail_star_empty {
+  fill: transparent !important;
+  color: #a0a0a0 !important;
+}
+
+.f_detail_star_half {
+  fill: rgba(40, 192, 100, 0.5) !important;
+  color: rgba(40, 192, 100, 0.5) !important;
+}
+
+.f_detail_price_accent {
+  color: #28C064 !important;
+}
+
+.f_detail_badge_trust {
+  background-color: #1E1E1E !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.f_detail_qty_selector {
+  background-color: #2A2A2A !important;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+}
+
+.f_detail_qty_btn {
+  padding: 0.375rem;
+  border-radius: 0.375rem;
+  color: #a0a0a0;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.f_detail_qty_btn:hover {
+  background-color: #3A3A3A !important;
+  color: #FFFFFF !important;
+}
+
+.f_similar_carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+
+.f_similar_carousel::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome/Safari */
+}
+
+.f_similar_card {
+  background-color: #1E1E1E !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  width: 11rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.f_similar_card:hover {
+  transform: translateY(-4px);
+  border-color: #28C064 !important;
+}
+
+.f_similar_buy_btn {
+  background-color: rgba(40, 192, 100, 0.1) !important;
+  color: #28C064 !important;
+  border: 1px solid rgba(40, 192, 100, 0.3) !important;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  width: 100%;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.f_similar_buy_btn:hover {
+  background-color: #28C064 !important;
+  color: #0A1A10 !important;
+  border-color: #28C064 !important;
+}

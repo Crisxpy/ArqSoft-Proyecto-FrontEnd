@@ -6,6 +6,7 @@ import Catalog from '../components/Catalog';
 import Cart from '../components/Cart';
 import Orders from '../components/Orders';
 import Footer from '../components/Footer';
+import LandingTab from '../components/LandingTab';
 import { useAuth } from '../adapters/hooks/useAuth.jsx';
 import { useCart } from '../adapters/hooks/useCart.jsx';
 
@@ -16,7 +17,8 @@ export default function StorePage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('catalog');
+  const [activeTab, setActiveTab] = useState('inicio');
+  const [catalogCategory, setCatalogCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
@@ -39,6 +41,7 @@ export default function StorePage() {
     clearOrders();
     setSearch('');
     setPage(1);
+    setCatalogCategory('all');
     navigate('/');
   };
 
@@ -47,23 +50,51 @@ export default function StorePage() {
     setPage(1);
   };
 
+  const handleGoToCatalogFromLanding = (category) => {
+    setCatalogCategory(category);
+    setActiveTab('catalog');
+  };
+
   return (
     <div className="app">
       <Navbar
         user={user}
         cartCount={cartCount}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => {
+          if (tab !== 'catalog') {
+            setCatalogCategory('all');
+          }
+          setActiveTab(tab);
+        }}
         onLogout={handleLogout}
         search={search}
         onSearchChange={handleSearchChange}
         isLoggedIn={true}
       />
 
-      <Tabs activeTab={activeTab} onTabChange={setActiveTab} isLoggedIn={true} />
+      <Tabs
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          if (tab !== 'catalog') {
+            setCatalogCategory('all');
+          }
+          setActiveTab(tab);
+        }}
+        isLoggedIn={true}
+      />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {activeTab === 'inicio' && (
+          <LandingTab
+            onGoToCatalog={handleGoToCatalogFromLanding}
+            onAddToCart={addToCart}
+            cart={cartState}
+          />
+        )}
         {activeTab === 'catalog' && (
           <Catalog
+            key={catalogCategory}
+            initialCategory={catalogCategory}
             search={search}
             cart={cartState}
             onAddToCart={addToCart}
@@ -79,7 +110,7 @@ export default function StorePage() {
             onClearCart={clearCart}
             onPlaceOrder={placeOrder}
             orderSuccessToken={orderSuccessToken}
-            onGoToCatalog={() => setActiveTab('catalog')}
+            onGoToCatalog={() => handleGoToCatalogFromLanding('all')}
           />
         )}
         {activeTab === 'orders' && <Orders orders={orders} error={false} />}

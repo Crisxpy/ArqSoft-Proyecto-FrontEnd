@@ -13,7 +13,13 @@ import { CartProvider } from './adapters/hooks/useCart.jsx';
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isLoggedIn } = useAuth();
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/tienda', { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleLoginSuccess = () => {
     navigate('/tienda');
