@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCatalog } from '../adapters/hooks/useCatalog.js';
 
-export default function Catalog({ search, cart, onAddToCart, page, onPageChange }) {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+export default function Catalog({ search, cart, onAddToCart, page, onPageChange, initialCategory = 'all' }) {
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [onlyInStock, setOnlyInStock] = useState(false);
   const [maxPrice, setMaxPrice] = useState(1000000);
 

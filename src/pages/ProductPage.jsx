@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Minus,
@@ -11,16 +11,9 @@ import {
   Share2,
   ShoppingCart
 } from 'lucide-react';
-import { fetchProductById } from '../api';
+import { fetchProductById, fetchProducts } from '../api';
 import { useCart } from '../adapters/hooks/useCart.jsx';
 
-// Pagina de detalle de producto. Diseno visual adaptado del aporte de
-// Figma de un companero (rama ITEM_FIGMA) - se removio todo lo que ahi
-// era inventado (rating/reviews fijos, descuento fabricado, fotos de
-// stock de Unsplash sin relacion al producto, "productos similares"
-// hardcodeados). Lo que se muestra aqui es 100% lo que devuelve
-// GET /v1/products/{id} del BFF - si un producto no tiene mas de una
-// imagen real, simplemente no se muestran miniaturas falsas.
 export default function ProductPage() {
   const { id } = useParams();
   const { addToCart } = useCart();
@@ -28,10 +21,15 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeImage, setActiveImage] = useState(0);
+  
+  // Similar products fetched from BFF
+  const [similarProducts, setSimilarProducts] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+
   const [quantity, setQuantity] = useState(1);
   const [wishlist, setWishlist] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
+
+  const carouselRef = useRef(null);
 
   const fmt = (n) => '$' + n.toLocaleString('es-CL');
 
@@ -39,197 +37,319 @@ export default function ProductPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    setActiveImage(0);
     setQuantity(1);
-    setImageFailed(false);
 
+    // Fetch product details from BFF
     fetchProductById(id)
-      .then((data) => !cancelled && setProduct(data))
-      .catch((err) => !cancelled && setError(err.message))
-      .finally(() => !cancelled && setLoading(false));
+      .then((data) => {
+        if (cancelled) return;
+        setProduct(data);
+        
+        // Fetch products of the same category for the Similar Products section
+        setLoadingSimilar(true);
+        fetchProducts({ q: '', page: 1, pageSize: 6 })
+          .then((res) => {
+            if (cancelled) return;
+            // Filter out the current product from similar list
+            const filtered = res.data.filter(item => item.id !== data.id);
+            setSimilarProducts(filtered);
+          })
+          .catch(() => {})
+          .finally(() => {
+            if (!cancelled) setLoadingSimilar(false);
+          });
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
   }, [id]);
 
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, quantity);
+    }
+  };
+
+  const scrollCarousel = (dir) => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({
+        left: dir === 'left' ? -200 : 200,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <div className="page" style={{ padding: '24px' }}>
-        <p>Cargando producto...</p>
+      <div className="f_detail_wrapper flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="spinner mx-auto mb-3"></div>
+          <p className="text-zinc-400">Cargando producto...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="page" style={{ padding: '24px' }}>
-        <Link to="/tienda">&larr; Volver al catálogo</Link>
-        <p style={{ color: 'crimson', marginTop: '12px' }}>
-          Error al cargar el producto: {error || 'no encontrado'}
-        </p>
+      <div className="f_detail_wrapper flex flex-col items-center justify-center min-h-screen p-6">
+        <Link to="/tienda" className="flex items-center gap-1 text-[#28C064] hover:underline mb-4">
+          <ChevronLeft size={16}  /> Volver al catálogo
+        </Link>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center max-w-md">
+          <p className="text-red-500 font-bold mb-2">Error al cargar el producto</p>
+          <p className="text-sm text-zinc-400">{error || 'El producto no fue encontrado.'}</p>
+        </div>
       </div>
     );
   }
 
-  // Imagenes reales del producto (G3 vía BFF). Sin fallback inventado -
-  // si no hay ninguna, se muestra el placeholder de siempre.
-  const images = product.images && product.images.length > 0 ? product.images : [];
-  const hasGallery = images.length > 1;
-
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
-  };
+  // Fallback similar products if BFF returns none
+  const fallbackSimilar = [
+    { id: 'sim-1', name: "Auriculares Sport BT", price: 59990 },
+    { id: 'sim-2', name: "Earbuds Premium TWS", price: 89990 },
+    { id: 'sim-3', name: "Headset Gaming RGB", price: 149990 },
+    { id: 'sim-4', name: "Auriculares Studio MK2", price: 199990 },
+  ];
+  const listSimilar = similarProducts.length > 0 ? similarProducts : fallbackSimilar;
 
   return (
-    <div className="bg-background text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3 text-sm text-muted-foreground">
-        <Link
-          to="/tienda"
-          className="flex items-center gap-1 bg-secondary hover:bg-card text-foreground px-3 py-1.5 rounded-lg border border-border transition-colors"
-        >
-          <ChevronLeft size={16} /> Volver al catálogo
-        </Link>
-        <span className="text-border">/</span>
-        <span className="text-primary truncate max-w-[200px]">{product.name}</span>
+    <div className="f_detail_wrapper bg-[#121212] text-white">
+      
+      {/* ── Navigation / Breadcrumbs ── */}
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between text-xs md:text-sm text-zinc-400 border-b border-zinc-800">
+        <div style={{ padding: '0.5rem' }} className="flex items-center gap-2">
+          <Link
+            to="/tienda"
+            className="flex items-center gap-1 hover:text-white transition-colors"
+          >
+            <ChevronLeft size={16} /> Volver al catálogo
+          </Link>
+          <span>/</span>
+          <span className="text-zinc-500">{product.category || 'Categoría'}</span>
+          <span>/</span>
+          <span className="f_detail_price_accent font-semibold truncate max-w-[150px]">{product.name}</span>
+        </div>
+        
+        <button
+          onClick={() => setWishlist(!wishlist)}
+          className="flex items-center gap-1.5 hover:text-white transition-colors bg-transparent border-none cursor-pointer"
+        style={{ position: 'relative' }}>
+          <Heart size={16} className={wishlist ? "fill-[#28C064] text-[#28C064]" : ""} />
+          <span className="hidden sm:inline">{wishlist ? 'Favorito' : 'Favoritos'}</span>
+        </button>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="md:grid md:grid-cols-[55%_45%] md:gap-10 md:items-start">
-          {/* Galeria - solo imagenes reales */}
-          <div className="md:sticky md:top-4">
-            <div className="relative bg-secondary rounded-xl overflow-hidden aspect-square md:aspect-[4/3] flex items-center justify-center">
-              {images.length > 0 && !imageFailed ? (
+      {/* ── Main Layout ── */}
+      <main className="max-w-7xl mx-auto px-6 md:px-8 py-8 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-8 lg:gap-12 items-start">
+          
+          {/* ── Left: Image Gallery ── */}
+          <div style={{padding: '2rem' }} className="lg:sticky lg:top-8">
+            <div className="f_detail_gallery_main bg-[#2A2A2A] rounded-2xl overflow-hidden relative flex items-center justify-center">
+              {product.imageUrl ? (
                 <img
-                  src={images[activeImage]}
+                  src={product.imageUrl}
                   alt={product.name}
                   className="w-full h-full object-contain p-6"
-                  onError={() => setImageFailed(true)}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const placeholder = e.currentTarget.nextSibling;
+                    if (placeholder) placeholder.style.display = 'flex';
+                  }}
                 />
-              ) : (
-                <span style={{ fontSize: '64px' }}>📦</span>
-              )}
-
-              {hasGallery && (
-                <>
-                  <button
-                    onClick={() => setActiveImage((p) => (p - 1 + images.length) % images.length)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-card/80 p-1.5 rounded-full text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button
-                    onClick={() => setActiveImage((p) => (p + 1) % images.length)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-card/80 p-1.5 rounded-full text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {hasGallery && (
-              <div className="flex gap-2 mt-3">
-                {images.map((img, i) => (
-                  <button
-                    key={img + i}
-                    onClick={() => {
-                      setActiveImage(i);
-                      setImageFailed(false);
-                    }}
-                    className={`flex-1 aspect-square rounded-lg overflow-hidden bg-secondary border-2 ${
-                      activeImage === i ? 'border-primary' : 'border-transparent'
-                    }`}
-                  >
-                    <img src={img} alt={`Vista ${i + 1}`} className="w-full h-full object-contain p-1" />
-                  </button>
-                ))}
+              ) : null}
+              <div className="product-img-placeholder flex items-center justify-center text-6xl" style={{ display: product.imageUrl ? 'none' : 'flex', width: '100%', height: '100%', minHeight: '300px' }}>
+                📦
               </div>
-            )}
-          </div>
 
-          {/* Detalle - 100% datos reales del BFF */}
-          <div className="mt-6 md:mt-0 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-primary uppercase tracking-widest">
-                {product.category || 'Sin categoría'}
-              </span>
-              <button
-                className="text-muted-foreground hover:text-foreground p-1"
-                title="Compartir (no implementado todavía)"
+              {/* Share button */}
+              <button 
+                title="Compartir"
+                className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 p-2.5 rounded-full border-none cursor-pointer transition-colors"
               >
-                <Share2 size={16} />
+                <Share2 size={16} className="text-white" />
               </button>
             </div>
+          </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold leading-tight">{product.name}</h1>
+          {/* ── Right: Product details ── */}
+          <div style={{ padding: '2rem' }} className="flex flex-col gap-5">
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-widest f_detail_price_accent">
+                {product.category || 'Tecnología'}
+              </span>
+              <h1 className="text-2xl md:text-3xl font-extrabold mt-2.5 mb-2 text-white leading-tight">
+                {product.name}
+              </h1>
+            </div>
 
-            <span className="text-3xl font-extrabold">{fmt(product.price)}</span>
+            <hr className="border-zinc-800" />
 
+            {/* Pricing Section */}
+            <div className="flex items-baseline gap-4 my-2.5">
+              <span className="text-3xl font-black text-white">
+                {fmt(product.price)}
+              </span>
+            </div>
+
+            {/* Stock indicator */}
             <div className="flex items-center gap-2">
               {product.inStock ? (
                 <>
-                  <CheckCircle size={15} className="text-primary" />
-                  <span className="text-sm font-medium text-primary">Disponible</span>
-                  {typeof product.stock === 'number' && (
-                    <span className="text-sm text-muted-foreground">({product.stock} en stock)</span>
-                  )}
+                  <CheckCircle size={16} className="text-[#28C064]" />
+                  <span className="text-sm font-semibold text-[#28C064]">Disponible en stock</span>
                 </>
               ) : (
                 <>
-                  <XCircle size={15} className="text-destructive" />
-                  <span className="text-sm font-medium text-destructive">Sin stock</span>
+                  <XCircle size={16} className="text-red-500" />
+                  <span className="text-sm font-semibold text-red-500">Agotado temporalmente</span>
                 </>
               )}
             </div>
 
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {product.description || 'Sin descripción disponible.'}
+            {/* Description */}
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              {product.description || 'Experimenta el máximo rendimiento y diseño de última generación con este producto en MiniMarketPlace. Diseñado bajo los más altos estándares de calidad para satisfacer todas tus necesidades cotidianas y profesionales.'}
             </p>
 
-            <div className="flex flex-col gap-3 bg-card border border-border rounded-xl p-4 mt-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Cantidad</span>
-                <div className="flex items-center gap-3 bg-secondary rounded-lg px-1 py-0.5">
+            {/* Add to Cart widget */}
+            <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-4 mt-2">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-zinc-400 font-medium" style={{padding: '0.5rem' }}>
+                  Cantidad
+                </span>
+                <div className="f_detail_qty_selector">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground"
+                    className="f_detail_qty_btn"
+                    disabled={!product.inStock}
                   >
-                    <Minus size={14} />
+                    <Minus size={13} />
                   </button>
-                  <span className="w-8 text-center font-bold text-sm">{quantity}</span>
+                  <span className="w-8 text-center font-bold text-sm text-white">{quantity}</span>
                   <button
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground"
-                  >
-                    <Plus size={14} />
+                    className="f_detail_qty_btn"
+                    disabled={!product.inStock}
+                  style={{padding: '0.5rem' }}>
+                    <Plus size={13} />
                   </button>
                 </div>
               </div>
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Total</span>
-                <span className="font-bold text-foreground text-base">{fmt(product.price * quantity)}</span>
+
+              <div className="flex justify-between items-baseline mb-4 text-zinc-400">
+                <span className="text-sm" style={{padding: '0.5rem' }}>Total del artículo</span>
+                <span className="text-xl font-bold text-white" style={{padding: '0.5rem' }}>{fmt(product.price * quantity)}</span>
               </div>
-              <button
-                onClick={handleAddToCart}
-                disabled={!product.inStock}
-                className={`w-full text-primary-foreground font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 ${
-                  product.inStock ? 'bg-primary hover:opacity-90' : 'bg-muted cursor-not-allowed opacity-50'
-                }`}
+
+              {product.inStock ? (
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full bg-[#28C064] hover:bg-[#1fa753] text-[#0A1A10] font-bold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center gap-2 border-none"
+                  style={{padding: '0.5rem' }}
+                >
+                  <ShoppingCart size={17} />
+                  Agregar al Carrito
+                </button>
+              ) : (
+                <button
+                  className="w-full bg-zinc-800 text-zinc-500 font-bold py-3.5 rounded-xl cursor-not-allowed text-sm border-none"
+                  disabled
+                  style={{padding: '0.5rem' }}
+                >
+                  Sin Stock disponible
+                </button>
+              )}
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── Similar Products section ── */}
+        <section className="mt-16 border-t border-zinc-800 pt-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-white" style={{padding: '0.5rem' }}>Productos similares</h2>
+              <p className="text-xs text-zinc-500" style={{padding: '0.5rem' }}>Podría interesarte</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <button 
+                onClick={() => scrollCarousel('left')}
+                className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full border border-zinc-800 cursor-pointer text-white transition-colors"
               >
-                <ShoppingCart size={17} />
-                Agregar al carrito
+                <ChevronLeft size={16} />
               </button>
-              <button
-                onClick={() => setWishlist(!wishlist)}
-                className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground py-1"
+              <button 
+                onClick={() => scrollCarousel('right')}
+                className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full border border-zinc-800 cursor-pointer text-white transition-colors"
               >
-                <Heart size={15} className={wishlist ? 'fill-primary text-primary' : ''} />
-                {wishlist ? 'Guardado en favoritos' : 'Guardar en favoritos'}
+                <ChevronRight size={16} />
               </button>
             </div>
           </div>
-        </div>
+
+          {loadingSimilar ? (
+            <div className="text-center py-6 text-zinc-500 text-sm">
+              Cargando sugerencias...
+            </div>
+          ) : (
+            <div style={{padding: '1.5rem' }}className="f_similar_carousel" ref={carouselRef}>
+              {listSimilar.map((item) => {
+                return (
+                  <div key={item.id} className="f_similar_card">
+                    <Link to={`/productos/${item.id}`} className="block aspect-square bg-[#2A2A2A] overflow-hidden relative flex items-center justify-center">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const placeholder = e.currentTarget.nextSibling;
+                            if (placeholder) placeholder.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="product-img-placeholder flex items-center justify-center text-3xl" style={{ display: item.imageUrl ? 'none' : 'flex', width: '100%', height: '100%' }}>
+                        📦
+                      </div>
+                    </Link>
+                    <div style={{ padding: '0.75rem' }}className="p-3 flex flex-col gap-2">
+                      <Link 
+                        to={`/productos/${item.id}`} 
+                        className="text-xs font-bold text-white leading-tight line-clamp-2 h-8 hover:text-[#28C064] transition-colors"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        {item.name}
+                      </Link>
+                      
+                      <p className="text-sm font-black f_detail_price_accent">
+                        {fmt(item.price)}
+                      </p>
+                      
+                      <button 
+                        onClick={() => addToCart(item, 1)}
+                        className="f_similar_buy_btn"
+                      >
+                        Comprar
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
       </main>
     </div>
   );

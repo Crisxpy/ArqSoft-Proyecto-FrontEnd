@@ -6,6 +6,13 @@ export default function Tabs({ activeTab, onTabChange, isLoggedIn }) {
   return (
     <div className="tabs" id="main-tabs">
       <div
+        className={`tab ${activeTab === 'inicio' ? 'active' : ''}`}
+        onClick={() => onTabChange('inicio')}
+        id="tab-inicio"
+      >
+        Inicio
+      </div>
+      <div
         className={`tab ${activeTab === 'catalog' ? 'active' : ''}`}
         onClick={() => onTabChange('catalog')}
         id="tab-catalog"
