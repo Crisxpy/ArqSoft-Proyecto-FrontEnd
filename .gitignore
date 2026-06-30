@@ -4,5 +4,6 @@ dist
 *.local
 scratch/
 .playwright-mcp/
+CLAUDE.md
 Mockup navegable e-commerce/
 Product Detail Page Design/
